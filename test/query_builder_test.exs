@@ -9,9 +9,9 @@ defmodule Bind.QueryBuilderTest do
     use Ecto.Schema
 
     schema "users" do
-      field :name, :string
-      field :age, :integer
-      field :active, :boolean
+      field(:name, :string)
+      field(:age, :integer)
+      field(:active, :boolean)
     end
   end
 
@@ -60,17 +60,14 @@ defmodule Bind.QueryBuilderTest do
       assert query_string =~ "active == ^true"
     end
 
-    test "ignores invalid parameters" do
+    test "returns error when an invalid constraint is provided" do
       params = %{
-        "name[eq]" => "Charlie",
-        "invalid[param]" => "value"
+        "name[eq]" => "Alice",
+        "age[invalid]" => 30
       }
 
-      query = QueryBuilder.build_where_query(params)
-      query_string = inspect(query)
-
-      assert query_string =~ "name == ^\"Charlie\""
-      refute query_string =~ "invalid"
+      result = QueryBuilder.build_where_query(params)
+      assert {:error, "Invalid constraint: invalid"} = result
     end
   end
 

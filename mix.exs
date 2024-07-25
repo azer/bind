@@ -6,7 +6,7 @@ defmodule Bind.MixProject do
   def project do
     [
       app: :bind,
-      version: "0.1.0",
+      version: "0.1.1",
       elixir: "~> 1.17",
       source_url: @source_url,
       homepage_url: @source_url,
@@ -15,7 +15,7 @@ defmodule Bind.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: [
-        licenses: ["Waqf"],
+        licenses: ["MIT"],
         links: %{
           "GitHub" => @source_url
         }

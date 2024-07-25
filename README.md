@@ -47,6 +47,18 @@ And finally run the query to get results from the database:
 results = Repo.all(query)
 ```
 
+Error handling
+
+```ex
+case Bind.query(MyApp.User, %{ "name[eq]" => "Alice", "age[gte]" => 30 }) do
+  {:error, reason} ->
+    IO.puts("Error building query: #{reason}")
+
+  query ->
+    results = Repo.all(query)
+end
+```
+
 ### Filtering
 
 Examples:

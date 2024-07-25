@@ -30,14 +30,18 @@ defmodule Bind do
 
   """
   def query(schema, params) when is_map(params) do
-    where_query = Bind.QueryBuilder.build_where_query(params)
-    sort_query = Bind.QueryBuilder.build_sort_query(params)
+    case Bind.QueryBuilder.build_where_query(params) do
+      {:error, reason} -> {:error, reason}
 
-    schema
-    |> where(^where_query)
-    |> order_by(^Enum.into(sort_query, []))
-    |> Bind.QueryBuilder.add_limit_query(params)
-    |> Bind.QueryBuilder.add_offset_query(params)
+      where_query ->
+        sort_query = Bind.QueryBuilder.build_sort_query(params)
+
+        schema
+        |> where(^where_query)
+        |> order_by(^Enum.into(sort_query, []))
+        |> Bind.QueryBuilder.add_limit_query(params)
+        |> Bind.QueryBuilder.add_offset_query(params)
+    end
   end
 
   @doc """
