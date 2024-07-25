@@ -2,15 +2,6 @@
 
 Flexible and dynamic Ecto query builder for Elixir applications, allowing developers to retrieve data flexibly without writing custom queries for each use case.
 
-```ex
-# curl /users?email[contains]=gmail&sort=-created_at&limit=10
-
-get "/users" do
-    query = Bind.query(User, conn.query_params)
-    users = Repo.all(query)
-    send_resp(conn, 200, Jason.encode!(%{data: users}))
-end
-```
 
 ## Installation
 
