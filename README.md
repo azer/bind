@@ -101,8 +101,11 @@ Use the `sort` parameter to specify sorting order:
 -   No prefix for ascending order
 
 ```ex
-params = %{"sort" => "-age"}  # Sort by age descending
+%{"sort" => "-age"}  # Sort by age descending
+%{"sort" => "age"}  # Sort by age ascending
 ```
+
+If nothing specified, sorts by ID field ascending.
 
 ### Pagination
 
@@ -112,7 +115,7 @@ params = %{"sort" => "-age"}  # Sort by age descending
 Example:
 
 ```ex
-params = %{"limit" => 20, "start" => 100}
+%{"limit" => 20, "start" => 100}
 ```
 
 ### Query String Support
