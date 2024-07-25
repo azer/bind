@@ -49,13 +49,23 @@ results = Repo.all(query)
 
 ### Filtering
 
-Example:
+Examples:
 
 ```ex
-Bind.query(%{"name[eq]" => "Alice", "age[gte]" => 30})
+%{"name[eq]" => "Alice", "age[gte]" => 30}
 ```
 
-Bind supports various comparison operators for filtering:
+```ex
+%{
+  "name[starts_with]" => "A",
+  "age[gte]" => 18,
+  "role[in]" => "superuser,admin,mod",
+  "is_active[true]" => "",
+  "last_login[nil]" => false
+}
+```
+
+List of comparison operators supported:
 
 -   `eq`: Equal to
 -   `neq`: Not equal to
