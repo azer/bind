@@ -14,29 +14,45 @@ def deps do
 end
 ```
 
-## Usage
+## API
 
-To build dynamic Ecto queries based on given parameters:
-
-```elixir
-params = %{"name[eq]" => "Alice", "age[gte]" => 30, "sort" => "-age", "limit" => 10}
-query = Bind.query(MyApp.User, params)
-results = Repo.all(query)
+```ex
+Bind.query(schema, params)
 ```
 
-This will return an Ecto query that can be executed using your Repo.
-
-### Parameters
+Parameters:
 
 -   `schema`: The Ecto schema module (e.g., `MyApp.User`).
--   `params`: A map of query parameters or a query string.
+-   `params`: Either a map of query parameters or a query string.
+
+Returns: An Ecto query.
+
+## Usage Example
+
+Create Ecto query:
+
+```ex
+query = Bind.query(MyApp.User, %{ "name[eq]" => "Alice", "age[gte]" => 30 })
+```
+
+Alternatively, with a query string:
+
+```ex
+query = Bind.query(MyApp.User, "?name[eq]=Alice&age[gte]=30")
+```
+
+And finally run the query to get results from the database:
+
+```ex
+results = Repo.all(query)
+```
 
 ### Filtering
 
 Example:
 
 ```ex
-%{"name[eq]" => "Alice", "age[gte]" => 30}
+Bind.query(%{"name[eq]" => "Alice", "age[gte]" => 30})
 ```
 
 Bind supports various comparison operators for filtering:
