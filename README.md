@@ -10,7 +10,7 @@ Add `bind` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:bind, "~> 0.1.0"}
+    {:bind, "~> 0.1.1"}
   ]
 end
 ```
