@@ -127,3 +127,17 @@ Bind can also pass URL query strings:
 query_string = "?name[eq]=Alice&age[gte]=30&sort=-age&limit=10"
 query = Bind.query(MyApp.User, query_string)
 ```
+
+## Using with Phoenix
+
+When using with Phoenix, use raw query string instead of params and decode it first; `URI.decode_query(conn.query_string)`.
+
+Example controller method:
+
+```ex
+def index(conn, params) do
+    query = Bind.query(Waitlist, URI.decode_query(conn.query_string))
+    requests = Mitte.Repo.all(query)
+    render(conn, :index, requests: requests)
+end
+```
