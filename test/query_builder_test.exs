@@ -67,7 +67,7 @@ defmodule Bind.QueryBuilderTest do
       }
 
       result = QueryBuilder.build_where_query(params)
-      assert {:error, "Invalid constraint: invalid"} = result
+      assert {:error, "Invalid constraint: age[invalid]"} = result
     end
   end
 

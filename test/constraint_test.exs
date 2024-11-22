@@ -74,7 +74,7 @@ defmodule Bind.ConstraintTest do
     end
 
     test "invalid constraint" do
-      assert QueryBuilder.constraint(:name, "invalid", "value") == {:error, "Invalid constraint: invalid"}
+      assert QueryBuilder.constraint(:name, "invalid", "value") == {:error, "Invalid constraint: name[invalid]"}
     end
 
 end

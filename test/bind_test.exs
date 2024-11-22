@@ -21,7 +21,7 @@ defmodule BindTest do
       "start" => 10
     }
 
-    query = Bind.query(User, params)
+    query = params |> Bind.query(User) # updated to use pipe
     query_string = inspect(query)
 
     assert query_string =~ "from u0 in BindTest.User"

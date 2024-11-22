@@ -29,7 +29,7 @@ defmodule Bind do
       #Ecto.Query<from u0 in MyApp.User, where: u0.name == ^"Alice", where: u0.age >= ^30, order_by: [desc: u0.age]>
 
   """
-  def query(schema, params) when is_map(params) do
+  def query(params, schema) when is_map(params) do
     case Bind.QueryBuilder.build_where_query(params) do
       {:error, reason} -> {:error, reason}
 
@@ -56,7 +56,7 @@ defmodule Bind do
       > Bind.query(MyApp.User, query_string)
       #Ecto.Query<from u0 in MyApp.User, where: u0.name == ^"Alice", where: u0.age >= ^30, order_by: [desc: u0.age]>
   """
-  def query(schema, query_string) when is_binary(query_string) do
+  def query(query_string, schema) when is_binary(query_string) do
     query_string
     |> Bind.QueryString.to_map()
     |> query(schema)
