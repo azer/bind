@@ -1,6 +1,31 @@
 defmodule Bind do
   import Ecto.Query
 
+  @doc """
+  Merges additional filters with existing query params.
+
+  ## Examples
+      # Only allow users to see their own posts
+      conn.query_string
+        |> Bind.filter(%{"user_id[eq]" => current_user.id})
+        |> Bind.query(Post)
+
+      # Scope to team and active status
+      params
+        |> Bind.filter(%{"team_id[eq]" => team_id})
+        |> Bind.filter(%{"active[true]" => true})
+        |> Bind.query(Post)
+  """
+  def filter(query_string, filters) when is_binary(query_string) do
+    query_string
+    |> Bind.QueryString.to_map()
+    |> filter(filters)
+  end
+
+  def filter(params, filters) when is_map(params) do
+    Map.merge(params, filters)
+  end
+
   @moduledoc """
   `Bind` provides functionality to build dynamic Ecto queries based on given parameters.
   It allows developers to retrieve data flexibly without writing custom queries for each use case.
@@ -147,6 +172,7 @@ defmodule Bind do
           # Try exact match first, then regex patterns
           new_value = find_mapper(field_mappers, field).(value)
           Map.put(acc, key, new_value)
+
         nil ->
           Map.put(acc, key, value)
       end

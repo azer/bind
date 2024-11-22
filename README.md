@@ -3,6 +3,26 @@
 Flexible and dynamic Ecto query builder for Elixir applications, allowing developers to retrieve data flexibly without writing custom queries for each use case.
 
 
+Define an API controller like this:
+
+```ex
+def index(conn, _params) do
+  users = conn.query_string
+    |> Bind.query(User)
+    |> Repo.all()
+
+  render(conn, :index, result: users)
+end
+```
+
+Now your endpoint supports all these queries out of the box:
+
+```
+GET /users?name[contains]=john&sort=-id&limit=25
+GET /users?salary[gte]=50000&location[eq]=berlin
+GET /users?joined_at[lt]=2024-01-01&status[neq]=disabled
+```
+
 ## Installation
 
 Add `bind` to your list of dependencies in `mix.exs`:
@@ -33,13 +53,13 @@ Returns: An Ecto query.
 Create Ecto query:
 
 ```ex
-query = Bind.query(MyApp.User, %{ "name[eq]" => "Alice", "age[gte]" => 30 })
+query = Bind.query(%{ "name[eq]" => "Alice", "age[gte]" => 30 }, MyApp.User)
 ```
 
 Alternatively, with a query string:
 
 ```ex
-query = Bind.query(MyApp.User, "?name[eq]=Alice&age[gte]=30")
+query = Bind.query("?name[eq]=Alice&age[gte]=30", MyApp.User)
 ```
 
 And finally run the query to get results from the database:
@@ -48,10 +68,22 @@ And finally run the query to get results from the database:
 results = Repo.all(query)
 ```
 
+Here's how it looks in a controller:
+
+```ex
+def index(conn, params) do
+  images = conn.query_string
+    |> Bind.query(MyApp.Media.Image)
+    |> MyApp.Repo.all()
+
+  render(conn, :index, result: images)
+end
+```
+
 Error handling
 
 ```ex
-case Bind.query(MyApp.User, %{ "name[eq]" => "Alice", "age[gte]" => 30 }) do
+case Bind.query(%{ "name[eq]" => "Alice", "age[gte]" => 30 }, MyApp.User) do
   {:error, reason} ->
     IO.puts("Error building query: #{reason}")
 
@@ -121,23 +153,62 @@ Example:
 
 ### Query String Support
 
-Bind can also pass URL query strings:
+In a typical Phoenix controller, you can simply pass `conn.query_string` and get Ecto query back:
 
 ```ex
-query_string = "?name[eq]=Alice&age[gte]=30&sort=-age&limit=10"
-query = Bind.query(MyApp.User, query_string)
+query_string = conn.query_string
+    |> Bind.query(query_string, MyApp.User)
+    |> MyApp.Repo.all()
 ```
 
-## Using with Phoenix
+### Transforming Query Parameters
 
-When using with Phoenix, use raw query string instead of params and decode it first; `URI.decode_query(conn.query_string)`.
-
-Example controller method:
+You can transform filter values before query is built:
 
 ```ex
-def index(conn, params) do
-    query = Bind.query(Waitlist, URI.decode_query(conn.query_string))
-    requests = Mitte.Repo.all(query)
-    render(conn, :index, requests: requests)
+"user_id[eq]=123&team_id[eq]=456"
+  |> Bind.map(%{
+    user_id: fn id -> HashIds.decode(id) end,
+    team_id: fn id -> HashIds.decode(id) end
+  })
+  |> Bind.query(MyApp.User)
+  |> Repo.all()
+```
+
+
+Transform specific fields
+
+```ex
+Bind.map(params, %{
+  user_id: fn id -> HashIds.decode(id) end,
+  name: &String.upcase/1
+})
+```
+
+Transform multiple fields with regex pattern:
+
+```ex
+Bind.map(params, %{
+  ~r/_id$/i => fn id -> HashIds.decode(id) end
+})
+```
+
+Note: Value transformation only applies to filter fields (e.g. [eq], [gte]), not to sort/limit/pagination params.
+
+### Access Control with Filters
+
+You can use filters to enforce access control and limit what users can query. Filters compose nicely with the query builder:
+
+```ex
+def index(conn, _params) do
+  my_posts = conn.query_string
+    # User can only see their own posts
+    |> Bind.filter(%{"user_id[eq]" => conn.assigns.current_user.id})
+    # That are active
+    |> Bind.filter(%{"active[true]" => true})
+    |> Bind.query(Post)
+    |> Repo.all()
+
+  render(conn, :index, posts: my_posts)
 end
 ```
