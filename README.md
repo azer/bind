@@ -1,8 +1,5 @@
 # Bind
 
-Flexible and dynamic Ecto query builder for Elixir applications, allowing developers to retrieve data flexibly without writing custom queries for each use case.
-
-
 Define an API controller like this:
 
 ```ex
@@ -22,6 +19,8 @@ GET /users?name[contains]=john&sort=-id&limit=25
 GET /users?salary[gte]=50000&location[eq]=berlin
 GET /users?joined_at[lt]=2024-01-01&status[neq]=disabled
 ```
+
+Bind is a flexible and dynamic Ecto query builder, for retrieving data flexibly without writing custom queries for each use case.
 
 ## Installation
 
