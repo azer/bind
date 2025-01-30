@@ -104,4 +104,27 @@ defmodule BindTest do
              "name[eq]" => "alice"
            }
   end
+
+  test "maps pagination parameters" do
+    params = "start=encoded_123&lora_model_id[eq]=encoded_456"
+
+    mapped =
+      Bind.map(params, %{
+        start: fn hash -> "decoded_#{hash}" end,
+        lora_model_id: fn hash -> "decoded_#{hash}" end
+      })
+
+    # Verify the mapping worked
+    assert mapped == %{
+             "start" => "decoded_encoded_123",
+             "lora_model_id[eq]" => "decoded_encoded_456"
+           }
+
+    # Verify the mapped values are used in the query
+    query = Bind.query(mapped, User)
+    query_string = inspect(query)
+
+    assert query_string =~ "where: u0.id > ^\"decoded_encoded_123\""
+    assert query_string =~ "lora_model_id == ^\"decoded_encoded_456\""
+  end
 end
