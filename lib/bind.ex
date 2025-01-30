@@ -165,22 +165,25 @@ defmodule Bind do
   Other parameters like sort, limit etc. are preserved unchanged.
   """
   def map(params, field_mappers) when is_map(params) do
-  Enum.reduce(params, %{}, fn {key, value}, acc ->
-    case Bind.Parse.where_field(key) do
-      [field_name, _] ->
-        field = to_string(field_name)
-        # Try exact match first, then regex patterns for where fields
-        new_value = find_mapper(field_mappers, field).(value)
-        Map.put(acc, key, new_value)
+    Enum.reduce(params, %{}, fn {key, value}, acc ->
+      case Bind.Parse.where_field(key) do
+	[field_name, _] ->
+          field = to_string(field_name)
+          new_value = find_mapper(field_mappers, field).(value)
+          Map.put(acc, key, new_value)
 
-      nil ->
-        # For non-where fields (like start, limit), try mapping the key directly
-        field = key
-        new_value = find_mapper(field_mappers, field).(value)
-        Map.put(acc, key, new_value)
-    end
-  end)
-end
+	nil ->
+          field = key
+          new_value = if field == "start" and is_binary(value) and String.starts_with?(value, "-") do
+            # Preserve the minus sign while mapping the rest
+            "-" <> find_mapper(field_mappers, field).(String.trim_leading(value, "-"))
+          else
+            find_mapper(field_mappers, field).(value)
+          end
+          Map.put(acc, key, new_value)
+      end
+    end)
+  end
 
 
   defp find_mapper(mappers, field) do
