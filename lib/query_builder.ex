@@ -15,24 +15,17 @@ defmodule Bind.QueryBuilder do
   end
 
   def add_offset_query(query, params) do
-    case Map.get(params, "start") do
-      nil ->
-	query
+  cond do
+    start_id = Map.get(params, "start") ->
+      Ecto.Query.where(query, [r], field(r, :id) > ^start_id)
 
-      start_id when is_binary(start_id) ->
-	case String.starts_with?(start_id, "-") do
-          true ->
-            clean_id = String.trim_leading(start_id, "-")
-            Ecto.Query.where(query, [r], field(r, :id) < ^clean_id)
-          false ->
-            Ecto.Query.where(query, [r], field(r, :id) > ^start_id)
-	end
+    start_id = Map.get(params, "-start") ->
+      Ecto.Query.where(query, [r], field(r, :id) < ^start_id)
 
-      start_id ->
-	Ecto.Query.where(query, [r], field(r, :id) > ^start_id)
-    end
+    true ->
+      query
   end
-
+end
 
   def build_where_query(params) do
     case validate_where_query(params) do

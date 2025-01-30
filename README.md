@@ -150,6 +150,14 @@ Example:
 %{"limit" => 20, "start" => 100}
 ```
 
+- For ascending order (default): `start=100`
+- For descending order, use leading dash: `-start=100`
+
+Example for descending pagination:
+```
+GET /users?sort=-created_at&-start=-100
+```
+
 ### Query String Support
 
 In a typical Phoenix controller, you can simply pass `conn.query_string` and get Ecto query back:

@@ -169,18 +169,23 @@ defmodule Bind do
       case Bind.Parse.where_field(key) do
 	[field_name, _] ->
           field = to_string(field_name)
+          # Try exact match first, then regex patterns for where fields
           new_value = find_mapper(field_mappers, field).(value)
           Map.put(acc, key, new_value)
 
 	nil ->
-          field = key
-          new_value = if field == "start" and is_binary(value) and String.starts_with?(value, "-") do
-            # Preserve the minus sign while mapping the rest
-            "-" <> find_mapper(field_mappers, field).(String.trim_leading(value, "-"))
-          else
-            find_mapper(field_mappers, field).(value)
-          end
-          Map.put(acc, key, new_value)
+          # For non-where fields (like start, limit), check if it's negated
+          {field, is_negated} = case String.starts_with?(key, "-") do
+				  true -> {String.trim_leading(key, "-"), true}
+				  false -> {key, false}
+				end
+
+          # Find mapper using non-negated field name
+          new_value = find_mapper(field_mappers, field).(value)
+
+          # Restore the negative prefix if it was present
+          final_key = if is_negated, do: "-#{field}", else: field
+          Map.put(acc, final_key, new_value)
       end
     end)
   end

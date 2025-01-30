@@ -131,14 +131,14 @@ defmodule BindTest do
   test "handles descending pagination with negative start parameter" do
     params = %{
       "sort" => "-id",
-      "start" => "-100"
+      "-start" => 100
     }
 
     query = Bind.query(params, User)
     query_string = inspect(query)
 
     # Should use < for descending order with negative start
-    assert query_string =~ "where: u0.id < ^\"100\""
+    assert query_string =~ "where: u0.id < ^100"
     assert query_string =~ "order_by: [desc: u0.id]"
   end
 
@@ -157,7 +157,7 @@ defmodule BindTest do
   end
 
   test "maps pagination parameters preserving negative start ID" do
-    params = "start=-encoded_123&lora_model_id[eq]=encoded_456"
+    params = "-start=encoded_123&lora_model_id[eq]=encoded_456"
 
     mapped =
       Bind.map(params, %{
@@ -167,14 +167,30 @@ defmodule BindTest do
 
     # Verify the mapping preserves the minus sign
     assert mapped == %{
-             "start" => "-decoded_encoded_123",
-             "lora_model_id[eq]" => "decoded_encoded_456"
-           }
+      "-start" => "decoded_encoded_123",
+      "lora_model_id[eq]" => "decoded_encoded_456"
+    }
 
     # Verify the mapped values are used correctly in the query
     query = Bind.query(mapped, User)
     query_string = inspect(query)
 
     assert query_string =~ "where: u0.id < ^\"decoded_encoded_123\""
+  end
+
+  test "maps start parameter to number" do
+    # Test positive number
+    params = "start=anything"
+    mapped = Bind.map(params, %{
+	  start: fn _id -> 123 end
+		      })
+
+    assert mapped == %{
+      "start" => 123
+    }
+
+    query = Bind.query(mapped, User)
+    query_string = inspect(query)
+    assert query_string =~ "where: u0.id > ^123"
   end
 end
